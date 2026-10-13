@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS tipo_cliente (
 CREATE TABLE IF NOT EXISTS persona (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
-    tipo_documento ENUM('C.C', 'PASAPORTE', 'VISA') NOT NULL,
+    tipo_documento ENUM('CC', 'PASAPORTE', 'VISA') NOT NULL,
     documento VARCHAR(20) UNIQUE NOT NULL,
     correo VARCHAR(100) UNIQUE NOT NULL,
     telefono VARCHAR(20) NOT NULL
@@ -92,10 +92,10 @@ INSERT INTO marca (id, nombre) VALUES
 (4, 'Motorola');
 
 INSERT INTO persona (id, nombre, tipo_documento, documento, correo, telefono) VALUES
-(1, 'Laura Calvache', 'C.C', '1002962251', 'laura@gmail.com', '3165519131'),
-(2, 'Carlos Gómez', 'C.C', '1098765432', 'carlos.g@gmail.com', '3151234567'),
+(1, 'Laura Calvache', 'CC', '1002962251', 'laura@gmail.com', '3165519131'),
+(2, 'Carlos Gómez', 'CC', '1098765432', 'carlos.g@gmail.com', '3151234567'),
 (3, 'Distribuidora Mayorista SAS', 'VISA', '900123456', 'ventas@mayoristasas.com', '3209876543'),
-(4, 'Andrea Mantilla', 'C.C', '1005432189', 'andrea.m@gmail.com', '3187654321');
+(4, 'Andrea Mantilla', 'CC', '1005432189', 'andrea.m@gmail.com', '3187654321');
 
 
 INSERT INTO cliente (id, tipo_cliente_fk) VALUES 
@@ -148,6 +148,3 @@ INSERT INTO venta (id, cliente_fk, fecha, descuento, iva, total) VALUES
 INSERT INTO detalle_venta (venta_fk, celular_fk, cantidad, precio_unitario, subtotal) VALUES 
 (3, 3, 1, 4200000.00, 4200000.00),
 (3, 2, 1, 900000.00, 900000.00);
-
-
-
