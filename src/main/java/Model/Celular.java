@@ -78,6 +78,18 @@ public class Celular implements Serializable {
         this.stock = stock;
     }
     
-    
+    @Override
+    public String toString() {
+        return """
+               *************************
+               Id:                %s
+               Modelo:            %s
+               Marca:             %s
+               Sistema Operativo: %s
+               Gama:              %s
+               Precio:            %s
+               Stock:             %s
+               """.formatted(id, modelo, marca.getNombre(), sistemaOperativo.getNombre(), gama, precio, stock);
+    }
     
 }

@@ -69,5 +69,17 @@ public class Persona implements Serializable {
         this.telefono = telefono;
     }
     
+    @Override
+    public String toString() {
+        return """
+               *************************
+               Id:             %s
+               Nombre:         %s
+               Tipo Documento: %s
+               Documento:      %s
+               Correo:         %s
+               Teléfono:       %s
+               """.formatted(id, nombre, tipoDocumento, documento, correo, telefono);
+    }
     
 }

@@ -27,5 +27,12 @@ public class Marca implements Serializable {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-    
+    @Override
+    public String toString() {
+        return """
+               *************************
+               Id:                  %s
+               Nombre de la Marca:  %s
+               """.formatted(id, nombre);
+    }
 }

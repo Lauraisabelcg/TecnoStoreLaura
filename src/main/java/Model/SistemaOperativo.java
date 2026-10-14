@@ -27,6 +27,12 @@ public class SistemaOperativo implements Serializable {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-    
+    public String toString() {
+        return """
+               *************************
+               Id:                  %s
+               Sistema Operativo:   %s
+               """.formatted(id, nombre);
+    }
     
 }

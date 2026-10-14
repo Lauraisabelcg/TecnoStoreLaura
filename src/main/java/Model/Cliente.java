@@ -20,5 +20,17 @@ public class Cliente extends Persona implements Serializable {
     this.tipoCliente = tipoCliente;
     }
     
-    
+    @Override
+    public String toString() {
+        return """
+               *************************
+               Id Cliente:     %s
+               Nombre:         %s
+               Tipo Documento: %s
+               Documento:      %s
+               Tipo Cliente:   %s
+               Correo:         %s
+               Teléfono:       %s
+               """.formatted(getId(), getNombre(), getTipoDocumento(), getDocumento(), tipoCliente, getCorreo(), getTelefono());
+    }
 }
