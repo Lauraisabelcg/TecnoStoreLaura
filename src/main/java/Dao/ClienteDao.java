@@ -91,6 +91,15 @@ public class ClienteDao {
         }
         return clientes;
     }
+    public Cliente obtenerPorId(int id) {
+    List<Cliente> listaClientes = listar(); 
     
+    for (Cliente cliente : listaClientes) {
+        if (cliente.getId() == id) {
+            return cliente;
+        }
+    }
+    return null;
+}
     }
 

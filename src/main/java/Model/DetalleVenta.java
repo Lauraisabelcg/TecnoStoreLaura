@@ -76,8 +76,8 @@ public class DetalleVenta implements Serializable {
                Id Detalle:      %s
                Celular:         %s
                Cantidad:        %s
-               Precio Unitario: $%s
-               Subtotal:        $%s
+               Precio Unitario: $%.2f
+               Subtotal:        $%.2f
                """.formatted(id, celular.getModelo(), cantidad, precioUnitario, subtotal);
     }
 }

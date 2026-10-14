@@ -86,19 +86,49 @@ public class Venta implements Serializable {
     public void setDetalles(List<DetalleVenta> detalles) {
         this.detalles = detalles;
     }
-
+public double calcularSubtotalBruto() {
+        if (detalles == null || detalles.isEmpty()) {
+            return 0.0;
+        }
+        return detalles.stream()
+                       .mapToDouble(DetalleVenta::getSubtotal)
+                       .sum();
+}
     @Override
     public String toString() {
+        StringBuilder listaProductos = new StringBuilder();
+        if (detalles != null && !detalles.isEmpty()) {
+            for (DetalleVenta d : detalles) {
+                listaProductos.append("   ").append(d.toString()).append("\n");
+            }
+        } else {
+            listaProductos.append("   (Sin productos registrados)\n");
+        }
+
         return """
-               =========================
-               Id Venta:   %s
-               Fecha:      %s
-               Cliente:    %s (Doc: %s)
-               Descuento:  $%s
-               IVA (19%%):  $%s
-               Total:      $%s
-               =========================
-               """.formatted(id, fecha, cliente.getNombre(), cliente.getDocumento(), descuento, iva, total);
+               =============================================
+               FACTURA DE VENTA #%d
+               Fecha: %s
+               Cliente: %s (Doc: %s)
+               ---------------------------------------------
+               DETALLE DE COMPRA:
+               %s---------------------------------------------
+               Subtotal:  $%,.2f
+               Descuento: $%,.2f
+               IVA (19%%): $%,.2f
+               TOTAL:     $%,.2f
+               =============================================
+               """.formatted(
+                id, 
+                fecha, 
+                cliente.getNombre(), 
+                cliente.getDocumento(), 
+                listaProductos.toString(), 
+                calcularSubtotalBruto(), 
+                descuento, 
+                iva, 
+                total
+        );
     }
 }
 
