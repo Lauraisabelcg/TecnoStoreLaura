@@ -33,11 +33,11 @@ public class ClienteDao {
     return false;
     } }
     
-    public Cliente buscarPorDocumento(String documento){
-    String sql = "Select p.id, p.nombre, p.tipo_documento, p.documento, p.correo,"
-            + "p.telefono, c.tipo.cliente_fk FROM persona p "
-            + "inner join cliente c ON p.id = c.id"
-            + "where p.documento = ?";
+    public Cliente buscarPorDocumento(String documento) {
+    String sql = "SELECT p.id, p.nombre, p.tipo_documento, p.documento, p.correo, "
+            + "p.telefono, c.tipo_cliente_fk FROM persona p "
+            + "INNER JOIN cliente c ON p.id = c.id "
+            + "WHERE p.documento = ?";
     try (PreparedStatement ps = conexion.prepareStatement(sql)){
         ps.setString(1, documento);
         try (ResultSet rs = ps.executeQuery()){
