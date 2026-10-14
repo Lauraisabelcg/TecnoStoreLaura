@@ -101,5 +101,17 @@ public class ClienteDao {
     }
     return null;
 }
+    
+    public boolean actualizar(Cliente cliente) {
+    String sql = "Update cliente SET tipo_cliente_fk = ? WHERE id = ?";
+    try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        ps.setInt(1, cliente.getTipoCliente().getId());
+        ps.setInt(2, cliente.getId());
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        System.err.println("Error sql en ClienteDao actualizar: " + e.getMessage());
+        return false;
+    }
+}
     }
 

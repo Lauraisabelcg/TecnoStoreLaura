@@ -52,9 +52,20 @@ public class PersonaDao {
             System.err.println("Error personaDao (buscarIdPorDocumento): "+ e.getMessage());
         }return -1;
     
+}
     
-    
-    
-    
+    public boolean actualizar(Persona persona) {
+    String sql = "Update persona SET nombre = ?, correo = ?, telefono = ? WHERE id = ?";
+    try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        ps.setString(1, persona.getNombre());
+        ps.setString(2, persona.getCorreo());
+        ps.setString(3, persona.getTelefono());
+        ps.setInt(4, persona.getId());
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        System.err.println("Error sql en PersonaDao actualizar: " + e.getMessage());
+        return false;
     }
+}
+    
 }
