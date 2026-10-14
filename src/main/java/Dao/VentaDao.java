@@ -161,7 +161,7 @@ public class VentaDao {
     }
     public List<Venta> listarTodas() {
         List<Venta> ventas = new ArrayList<>();
-        String sql = "Select id FROM venta Order by id desc";
+        String sql = "Select id FROM venta Order by id";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {

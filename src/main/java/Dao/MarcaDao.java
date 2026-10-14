@@ -48,7 +48,7 @@ public class MarcaDao {
             ps.setInt(1, id);
             try(ResultSet rs = ps.executeQuery()){
                 if (rs.next()){
-                return new Marca(rs.getInt(id), rs.getString("nombre"));
+                return new Marca(rs.getInt("id"), rs.getString("nombre"));
                 }
             }
         } catch (SQLException e) {
