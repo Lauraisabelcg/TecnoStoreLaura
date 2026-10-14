@@ -11,6 +11,7 @@ public class Celular implements Serializable {
     private Gama gama;
     private double precio;
     private int stock;
+    private int stockMinimo = 5;
 
     public Celular(int id, Marca marca, SistemaOperativo sistemaOperativo, String modelo, Gama gama, double precio, int stock) {
         this.id = id;
@@ -77,19 +78,28 @@ public class Celular implements Serializable {
     public void setStock(int stock) {
         this.stock = stock;
     }
-    
+    public int getStockMinimo() {
+        return stockMinimo;
+    }
+
+    public void setStockMinimo(int stockMinimo) {
+        this.stockMinimo = stockMinimo;
+    }
     @Override
     public String toString() {
         return """
-               *************************
-               Id:                %s
-               Modelo:            %s
-               Marca:             %s
-               Sistema Operativo: %s
-               Gama:              %s
-               Precio:            %s
-               Stock:             %s
-               """.formatted(id, modelo, marca.getNombre(), sistemaOperativo.getNombre(), gama, precio, stock);
+               ***************************
+               Id:               %s
+               Modelo:           %s
+               Marca:            %s
+               Sistema Operativo:%s
+               Gama:             %s
+               Precio:           %s
+               Stock:            %s
+               Stock Minimo:     %s
+               """.formatted(id, modelo, marca.getNombre(), sistemaOperativo.getNombre(), gama, precio, stock, stockMinimo);
     }
+
+    
     
 }

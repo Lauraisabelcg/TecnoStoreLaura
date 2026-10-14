@@ -21,7 +21,7 @@ public class CelularDao {
     }
 
     public boolean crear(Celular celular) {
-        String sql = "Insert INTO celular (marca_fk, sistema_operativo_fk, modelo, gama, precio, stock) "
+        String sql = "INSERT INTO celular (marca_fk, sistema_operativo_fk, modelo, gama, precio, stock) "
                    + "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -39,6 +39,17 @@ public class CelularDao {
                         celular.setId(rs.getInt(1));
                     }
                 }
+
+                // Inserta también el stock mínimo en su respectiva tabla
+                String sqlStockMin = "INSERT INTO stock_minimo (celular_fk, cantidad_minima) VALUES (?, ?) "
+                                   + "ON DUPLICATE KEY UPDATE cantidad_minima = ?";
+                try (PreparedStatement psStock = conexion.prepareStatement(sqlStockMin)) {
+                    psStock.setInt(1, celular.getId());
+                    psStock.setInt(2, celular.getStockMinimo());
+                    psStock.setInt(3, celular.getStockMinimo());
+                    psStock.executeUpdate();
+                }
+
                 return true;
             }
         } catch (SQLException e) {
@@ -48,13 +59,15 @@ public class CelularDao {
     }
 
     public Celular buscarPorId(int id) {
-        String sql = "Select c.id, c.modelo, c.gama, c.precio, c.stock, "
-                   + "m.id AS id_marca, m.nombre AS nombre_marca, "
-                   + "so.id AS id_so, so.nombre AS nombre_so "
-                   + "FROM celular c "
-                   + "inner join marca m ON c.marca_fk = m.id "
-                   + "inner join sistema_operativo so ON c.sistema_operativo_fk = so.id "
-                   + "where c.id = ?";
+        String sql = "SELECT c.id, c.modelo, c.gama, c.precio, c.stock, "
+                + "m.id AS id_marca, m.nombre AS nombre_marca, "
+                + "so.id AS id_so, so.nombre AS nombre_so, "
+                + "COALESCE(sm.cantidad_minima, 5) AS stock_minimo "
+                + "FROM celular c "
+                + "INNER JOIN marca m ON c.marca_fk = m.id "
+                + "INNER JOIN sistema_operativo so ON c.sistema_operativo_fk = so.id "
+                + "LEFT JOIN stock_minimo sm ON c.id = sm.celular_fk "
+                + "WHERE c.id = ?";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -65,15 +78,17 @@ public class CelularDao {
                     SistemaOperativo so = new SistemaOperativo(rs.getInt("id_so"), rs.getString("nombre_so"));
                     Gama gama = Gama.valueOf(rs.getString("gama"));
 
-                    return new Celular(
-                        rs.getInt("id"),
-                        marca,
-                        so,
-                        rs.getString("modelo"),
-                        gama,
-                        rs.getDouble("precio"),
-                        rs.getInt("stock")
+                    Celular celular = new Celular(
+                            rs.getInt("id"),
+                            marca,
+                            so,
+                            rs.getString("modelo"),
+                            gama,
+                            rs.getDouble("precio"),
+                            rs.getInt("stock")
                     );
+                    celular.setStockMinimo(rs.getInt("stock_minimo"));
+                    return celular;
                 }
             }
         } catch (SQLException e) {
@@ -84,15 +99,17 @@ public class CelularDao {
 
     public List<Celular> listar() {
         List<Celular> celulares = new ArrayList<>();
-        String sql = "Select c.id, c.modelo, c.gama, c.precio, c.stock, "
-                   + "m.id AS id_marca, m.nombre AS nombre_marca, "
-                   + "so.id AS id_so, so.nombre AS nombre_so "
-                   + "FROM celular c "
-                   + "inner join marca m ON c.marca_fk = m.id "
-                   + "inner join sistema_operativo so ON c.sistema_operativo_fk = so.id "
-                   + "order by c.id ASC";
+        String sql = "SELECT c.id, c.modelo, c.gama, c.precio, c.stock, "
+                + "m.id AS id_marca, m.nombre AS nombre_marca, "
+                + "so.id AS id_so, so.nombre AS nombre_so, "
+                + "COALESCE(sm.cantidad_minima, 5) AS stock_minimo "
+                + "FROM celular c "
+                + "INNER JOIN marca m ON c.marca_fk = m.id "
+                + "INNER JOIN sistema_operativo so ON c.sistema_operativo_fk = so.id "
+                + "LEFT JOIN stock_minimo sm ON c.id = sm.celular_fk "
+                + "ORDER BY c.id ASC";
 
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
+        try (PreparedStatement ps = conexion.prepareStatement(sql); 
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -101,14 +118,16 @@ public class CelularDao {
                 Gama gama = Gama.valueOf(rs.getString("gama"));
 
                 Celular celular = new Celular(
-                    rs.getInt("id"),
-                    marca,
-                    so,
-                    rs.getString("modelo"),
-                    gama,
-                    rs.getDouble("precio"),
-                    rs.getInt("stock")
+                        rs.getInt("id"),
+                        marca,
+                        so,
+                        rs.getString("modelo"),
+                        gama,
+                        rs.getDouble("precio"),
+                        rs.getInt("stock")
                 );
+
+                celular.setStockMinimo(rs.getInt("stock_minimo"));
                 celulares.add(celular);
             }
         } catch (SQLException e) {
@@ -117,20 +136,13 @@ public class CelularDao {
         return celulares;
     }
     public Celular obtenerPorId(int id) {
-    List<Celular> listaCelulares = listar(); 
-    
-    for (Celular celular : listaCelulares) {
-        if (celular.getId() == id) {
-            return celular;
-        }
+        return buscarPorId(id);
     }
-    return null;
-}
 
     public boolean actualizar(Celular celular) {
-        String sql = "Update celular SET marca_fk = ?, sistema_operativo_fk = ?, "
+        String sql = "UPDATE celular SET marca_fk = ?, sistema_operativo_fk = ?, "
                    + "modelo = ?, gama = ?, precio = ?, stock = ? "
-                   + "where id = ?";
+                   + "WHERE id = ?";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, celular.getMarca().getId());
@@ -141,16 +153,26 @@ public class CelularDao {
             ps.setInt(6, celular.getStock());
             ps.setInt(7, celular.getId());
 
-            return ps.executeUpdate() > 0;
+            int filas = ps.executeUpdate();
+            if (filas > 0) {
+                String sqlStockMin = "INSERT INTO stock_minimo (celular_fk, cantidad_minima) VALUES (?, ?) "
+                                   + "ON DUPLICATE KEY UPDATE cantidad_minima = ?";
+                try (PreparedStatement psStock = conexion.prepareStatement(sqlStockMin)) {
+                    psStock.setInt(1, celular.getId());
+                    psStock.setInt(2, celular.getStockMinimo());
+                    psStock.setInt(3, celular.getStockMinimo());
+                    psStock.executeUpdate();
+                }
+                return true;
+            }
         } catch (SQLException e) {
             System.err.println("Error SQL en CelularDao actualizar: " + e.getMessage());
-            return false;
         }
+        return false;
     }
 
     public boolean actualizarStock(int idCelular, int nuevoStock) {
-        String sql = "update celular set stock = ? "
-                   + "where id = ?";
+        String sql = "UPDATE celular SET stock = ? WHERE id = ?";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, nuevoStock);
@@ -162,28 +184,28 @@ public class CelularDao {
             return false;
         }
     }
-    
+
     public boolean tieneVentasAsociadas(int idCelular) {
-        String sql = "Select 1 FROM detalle_venta where celular_fk = ? LIMIT 1";
+        String sql = "SELECT 1 FROM detalle_venta WHERE celular_fk = ? LIMIT 1";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idCelular);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next(); 
+                return rs.next();
             }
         } catch (SQLException e) {
             System.err.println("Error SQL validando ventas asociadas: " + e.getMessage());
             return true;
         }
     }
+
     public boolean eliminar(int id) {
         if (tieneVentasAsociadas(id)) {
-            System.err.println("No se puede eliminar: el celular ya tiene ventas registradas"
-                    + "");
+            System.err.println("No se puede eliminar: el celular ya tiene ventas registradas");
             return false;
         }
 
-        String sql = "Delete from celular where id = ?";
+        String sql = "DELETE FROM celular WHERE id = ?";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -193,6 +215,5 @@ public class CelularDao {
             return false;
         }
     }
-    
 }
 

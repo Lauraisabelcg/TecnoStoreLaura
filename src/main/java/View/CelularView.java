@@ -53,7 +53,7 @@ public class CelularView {
     }
 
     public String pedirGama() {
-        return v.validarGama("Ingrese la gama (Alta, Media, Baja)");
+        return v.validarGama("Ingrese la gama ");
     }
 
     public double pedirPrecio() {
@@ -76,6 +76,10 @@ public class CelularView {
         System.out.println("\n--- CATALOGO DE CELULARES ---");
         for (Celular c : celulares) {
             System.out.println(c);
+            if (c.getStock() <= c.getStockMinimo()) {
+                System.out.println(" STOCK BAJO Stock actual: " + c.getStock() 
+                        + " (Minimo requerido: " + c.getStockMinimo() + ")");
+            }
         }
     }
 
