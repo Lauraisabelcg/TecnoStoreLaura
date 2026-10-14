@@ -1,42 +1,67 @@
 package Controller;
 
+import Dao.VentaDao;
 import Model.Venta;
+import Util.ArchivoUtils;
+import View.ReporteView;
+import java.sql.Connection;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ReporteController {
 
+    private final VentaDao ventaDao;
+    private final ReporteStream reporteStream; // Usa directamente tu clase ReporteStream
+    private final ReporteView vista;
 
-    public double calcularIngresosTotales(List<Venta> ventas) {
-        return ventas.stream()
-                     .mapToDouble(Venta::getTotal)
-                     .sum();
+    public ReporteController(Connection conexion, ReporteView vista) {
+        this.ventaDao = new VentaDao(conexion);
+        this.reporteStream = new ReporteStream();
+        this.vista = vista;
     }
 
-  
-    public List<Venta> filtrarVentasPorMontoMinimo(List<Venta> ventas, double montoMinimo) {
-        return ventas.stream()
-                     .filter(v -> v.getTotal() >= montoMinimo)
-                     .collect(Collectors.toList());
+    public void iniciar() {
+        boolean volver = false;
+        while (!volver) {
+            int opcion = vista.mostrarMenu();
+            List<Venta> ventasActuales = ventaDao.listarTodas();
+
+            switch (opcion) {
+                case 1 -> {
+                    double total = reporteStream.calcularIngresosTotales(ventasActuales);
+                    vista.mostrarIngresosTotales(total);
+                }
+                case 2 -> {
+                    double monto = vista.pedirMontoMinimo();
+                    List<Venta> filtradas = reporteStream.filtrarVentasPorMontoMinimo(ventasActuales, monto);
+                    vista.mostrarVentasFiltradas(filtradas, monto);
+                }
+                case 3 -> {
+                    var porCliente = reporteStream.calcularTotalFacturadoPorCliente(ventasActuales);
+                    vista.mostrarTotalPorCliente(porCliente);
+                }
+                    case 4 -> {
+                        List<String> top3 = reporteStream.obtenerTop3(ventasActuales);
+                        vista.mostrarTop3(top3);
+                    
+                }
+                case 5 -> exportarBackup(ventasActuales);
+                case 6 -> importarBackup();
+                case 7 -> volver = true;
+                default -> vista.mostrarMensaje("Opción no válida. Intente de nuevo.");
+            }
+        }
     }
 
-
-    public Map<String, Double> calcularTotalFacturadoPorCliente(List<Venta> ventas) {
-        return ventas.stream()
-                     .collect(Collectors.groupingBy(
-                         v -> v.getCliente().getNombre(),
-                         Collectors.summingDouble(Venta::getTotal)
-                     ));
+    private void exportarBackup(List<Venta> ventas) {
+        if (ventas.isEmpty()) {
+            vista.mostrarMensaje("No hay ventas en la base de datos para respaldar.");
+            return;
+        }
+        ArchivoUtils.guardarReporteVentasBinario(ventas);
     }
 
-
-    public List<String> obtenerModelosVendidosUnicos(List<Venta> ventas) {
-        return ventas.stream()
-                     .flatMap(v -> v.getDetalles().stream())
-                     .map(d -> d.getCelular().getModelo())
-                     .distinct()
-                     .sorted()
-                     .collect(Collectors.toList());
+    private void importarBackup() {
+        List<Venta> ventasRecuperadas = ArchivoUtils.leerReporteVentasBinario();
+        vista.mostrarVentasRecuperadas(ventasRecuperadas);
     }
 }
